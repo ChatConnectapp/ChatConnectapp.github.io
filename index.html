@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatConnect – تواصل مع أشخاص جدد</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0012;
+  --hot-pink: #ff2d78;
+  --neon-purple: #bf00ff;
+  --electric-blue: #00cfff;
+  --gold: #ffcc00;
+  --orange: #ff7700;
+  --surface: rgba(255,255,255,0.04);
+  --border: rgba(255,45,120,0.2);
+  --text: #fff;
+  --muted: rgba(255,255,255,0.55);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* === ANIMATED BACKGROUND === */
+.bg-layer {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 20%, rgba(191,0,255,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 10% 80%, rgba(255,45,120,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0,207,255,0.07) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: bgshift 8s ease-in-out infinite alternate;
+}
+@keyframes bgshift {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* Floating hearts */
+.hearts { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.heart {
+  position: absolute;
+  font-size: 18px;
+  opacity: 0;
+  animation: floatHeart linear infinite;
+}
+@keyframes floatHeart {
+  0% { transform: translateY(100vh) scale(0.5) rotate(-10deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-120px) scale(1.1) rotate(10deg); opacity: 0; }
+}
+
+/* === NAV === */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 50px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,0,18,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,45,120,0.15);
+}
+
+.logo {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 26px; font-weight: 800;
+  background: linear-gradient(135deg, var(--hot-pink), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
+
+.nav-btn {
+  background: linear-gradient(135deg, var(--hot-pink), var(--neon-purple));
+  border: none; color: #fff;
+  padding: 10px 28px; border-radius: 50px;
+  font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,45,120,0.4);
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 0 35px rgba(255,45,120,0.6); }
+
+/* === HERO === */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 120px 24px 80px;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,45,120,0.12);
+  border: 1px solid rgba(255,45,120,0.35);
+  padding: 7px 20px; border-radius: 100px;
+  font-size: 12px; font-weight: 700; letter-spacing: 2px;
+  color: var(--hot-pink); text-transform: uppercase;
+  margin-bottom: 30px;
+  animation: fadeDown 0.8s ease forwards;
+}
+.live-dot {
+  width: 8px; height: 8px; background: var(--hot-pink);
+  border-radius: 50%; box-shadow: 0 0 10px var(--hot-pink);
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+.hero h1 {
+  font-family: 'Tajawal', sans-serif;
+  font-size: clamp(42px, 7vw, 90px); font-weight: 800;
+  line-height: 1.1; margin-bottom: 24px;
+  animation: fadeDown 0.8s ease 0.1s both;
+}
+.hero h1 .line1 { display: block; color: #fff; }
+.hero h1 .line2 {
+  display: block;
+  background: linear-gradient(135deg, var(--hot-pink) 0%, var(--gold) 40%, var(--electric-blue) 80%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(255,45,120,0.5));
+}
+
+.hero p {
+  color: var(--muted); font-size: 17px; line-height: 1.9;
+  max-width: 560px; margin: 0 auto 44px;
+  animation: fadeDown 0.8s ease 0.2s both;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === ONLINE PROFILES === */
+.profiles-strip {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 50px;
+  animation: fadeDown 0.8s ease 0.3s both;
+}
+
+.profile-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,45,120,0.25);
+  padding: 8px 16px 8px 10px; border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+}
+.profile-chip:hover {
+  transform: translateY(-3px);
+  border-color: var(--hot-pink);
+  box-shadow: 0 8px 30px rgba(255,45,120,0.25);
+}
+
+.profile-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; position: relative; flex-shrink: 0;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.p1 { background: linear-gradient(135deg,#ff6b9d,#ffa07a); }
+.p2 { background: linear-gradient(135deg,#c47af4,#ff6bcd); }
+.p3 { background: linear-gradient(135deg,#6bdfff,#a78bfa); }
+.p4 { background: linear-gradient(135deg,#ffcc00,#ff7700); }
+.p5 { background: linear-gradient(135deg,#00cfff,#00ff8c); }
+
+.profile-info { text-align: right; }
+.profile-name { font-size: 13px; font-weight: 700; }
+.profile-status { font-size: 10px; color: #4ade80; font-weight: 600; }
+
+.cta-wrap { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; animation: fadeDown 0.8s ease 0.4s both; }
+
+.btn-main {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--hot-pink), var(--neon-purple));
+  color: #fff; padding: 16px 40px; border-radius: 50px;
+  font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer; text-decoration: none;
+  box-shadow: 0 0 30px rgba(255,45,120,0.35);
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 50px rgba(255,45,120,0.55); }
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: transparent; color: #fff;
+  padding: 16px 36px; border-radius: 50px;
+  font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.2); cursor: pointer; text-decoration: none;
+  transition: border-color 0.3s, background 0.3s;
+}
+.btn-outline:hover { border-color: var(--hot-pink); background: rgba(255,45,120,0.08); }
+
+/* === LIVE CHAT DEMO === */
+.demo-section {
+  position: relative; z-index: 1;
+  padding: 80px 24px;
+}
+
+.section-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 4px; color: var(--hot-pink); text-transform: uppercase; margin-bottom: 14px; }
+.section-title { text-align: center; font-family: 'Tajawal', sans-serif; font-size: clamp(28px, 4vw, 50px); font-weight: 800; margin-bottom: 60px; }
+.section-title em { font-style: normal; background: linear-gradient(135deg, var(--hot-pink), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+.demo-layout {
+  max-width: 980px; margin: 0 auto;
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: 0;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,45,120,0.2);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(255,45,120,0.08);
+}
+
+/* Sidebar */
+.chat-sidebar {
+  background: rgba(0,0,0,0.4);
+  border-left: 1px solid rgba(255,45,120,0.15);
+  padding: 0;
+  display: flex; flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px 18px;
+  background: linear-gradient(135deg, rgba(255,45,120,0.15), rgba(191,0,255,0.1));
+  border-bottom: 1px solid rgba(255,45,120,0.15);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-title { font-size: 14px; font-weight: 700; }
+.online-count { font-size: 11px; color: #4ade80; background: rgba(74,222,128,0.1); padding: 3px 10px; border-radius: 20px; }
+
+.user-list { flex: 1; overflow-y: auto; }
+.user-list::-webkit-scrollbar { width: 3px; }
+.user-list::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); border-radius: 2px; }
+
+.user-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+}
+.user-item:hover, .user-item.active { background: rgba(255,45,120,0.1); }
+.user-item.active { border-right: 3px solid var(--hot-pink); }
+
+.u-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0; position: relative;
+}
+.u-online {
+  position: absolute; bottom: 1px; left: 1px;
+  width: 10px; height: 10px; background: #4ade80;
+  border-radius: 50%; border: 2px solid var(--bg);
+  box-shadow: 0 0 6px #4ade80;
+}
+.u-info { flex: 1; min-width: 0; }
+.u-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.u-last { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.u-badge { background: var(--hot-pink); color: #fff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+/* Chat main */
+.chat-main { display: flex; flex-direction: column; }
+
+.chat-top {
+  padding: 16px 22px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,45,120,0.15);
+  display: flex; align-items: center; gap: 14px;
+}
+
+.chat-top-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.chat-top-name { font-size: 15px; font-weight: 700; }
+.chat-top-status { font-size: 11px; color: #4ade80; font-weight: 600; }
+.chat-top-actions { margin-right: auto; display: flex; gap: 8px; }
+.top-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255,45,120,0.25);
+  background: rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px;
+  transition: background 0.2s;
+}
+.top-btn:hover { background: rgba(255,45,120,0.15); }
+
+.messages-area {
+  flex: 1; min-height: 320px; max-height: 380px;
+  overflow-y: auto; padding: 20px 22px;
+  display: flex; flex-direction: column; gap: 16px;
+  scroll-behavior: smooth;
+}
+.messages-area::-webkit-scrollbar { width: 4px; }
+.messages-area::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.2); border-radius: 2px; }
+
+.msg {
+  display: flex; gap: 10px; align-items: flex-end;
+  animation: msgIn 0.35s ease forwards; opacity: 0;
+}
+.msg.me { flex-direction: row-reverse; }
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.m-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+.m-bubble {
+  max-width: 72%; padding: 10px 14px; border-radius: 16px;
+  font-size: 13.5px; line-height: 1.6;
+}
+.msg.them .m-bubble {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom-right-radius: 4px;
+}
+.msg.me .m-bubble {
+  background: linear-gradient(135deg, rgba(255,45,120,0.3), rgba(191,0,255,0.25));
+  border: 1px solid rgba(255,45,120,0.3);
+  border-bottom-left-radius: 4px;
+}
+
+.typing-row { display: none; align-items: center; gap: 10px; padding: 0 22px 10px; }
+.typing-row.show { display: flex; }
+.t-dots { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 9px 13px; display: flex; gap: 4px; }
+.t-dots span { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: td 1.4s ease-in-out infinite; }
+.t-dots span:nth-child(2) { animation-delay: 0.2s; }
+.t-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes td { 0%,80%,100%{transform:scale(0.7);opacity:0.5}40%{transform:scale(1);opacity:1} }
+
+.quick-replies { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 22px 0; }
+.qr {
+  background: rgba(255,45,120,0.08); border: 1px solid rgba(255,45,120,0.25);
+  color: var(--hot-pink); padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-family: 'Cairo', sans-serif; cursor: pointer;
+  transition: background 0.2s;
+}
+.qr:hover { background: rgba(255,45,120,0.18); }
+
+.input-row {
+  padding: 16px 18px; border-top: 1px solid rgba(255,45,120,0.15);
+  background: rgba(0,0,0,0.25);
+  display: flex; gap: 10px; align-items: center;
+}
+.chat-in {
+  flex: 1; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,45,120,0.2); border-radius: 50px;
+  padding: 11px 18px; color: #fff;
+  font-family: 'Cairo', sans-serif; font-size: 13px;
+  outline: none; transition: border-color 0.3s; direction: rtl;
+}
+.chat-in:focus { border-color: var(--hot-pink); box-shadow: 0 0 0 3px rgba(255,45,120,0.1); }
+.chat-in::placeholder { color: var(--muted); }
+
+.send-b {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--hot-pink), var(--neon-purple));
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px;
+  transition: transform 0.2s, box-shadow 0.3s; flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(255,45,120,0.3);
+}
+.send-b:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(255,45,120,0.5); }
+.send-b:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.emoji-row { display: flex; gap: 6px; padding: 0 18px 4px; }
+.em-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; }
+.em-btn:hover { opacity: 1; transform: scale(1.2); }
+
+/* === FEATURES === */
+.features { position: relative; z-index: 1; padding: 80px 24px; }
+.feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+.feat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,45,120,0.15);
+  border-radius: 18px; padding: 28px 24px;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.feat-card:hover { transform: translateY(-6px); border-color: rgba(255,45,120,0.4); box-shadow: 0 20px 50px rgba(255,45,120,0.1); }
+.feat-icon { font-size: 36px; margin-bottom: 16px; }
+.feat-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.feat-card p { font-size: 13px; color: var(--muted); line-height: 1.8; }
+
+/* === STATS === */
+.stats-bar { position: relative; z-index: 1; padding: 60px 24px; }
+.stats-inner { max-width: 800px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px; }
+.stat { text-align: center; }
+.stat-n { font-family: 'Tajawal', sans-serif; font-size: 44px; font-weight: 800; background: linear-gradient(135deg, var(--hot-pink), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-l { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* === CTA === */
+.cta { position: relative; z-index: 1; padding: 80px 24px; text-align: center; }
+.cta-inner {
+  max-width: 600px; margin: 0 auto;
+  background: linear-gradient(135deg, rgba(255,45,120,0.1), rgba(191,0,255,0.1));
+  border: 1px solid rgba(255,45,120,0.25);
+  border-radius: 28px; padding: 60px 40px;
+}
+.cta-inner h2 { font-family: 'Tajawal', sans-serif; font-size: clamp(26px,4vw,42px); font-weight: 800; margin-bottom: 14px; }
+.cta-inner p { color: var(--muted); font-size: 15px; line-height: 1.9; margin-bottom: 36px; }
+
+footer { position: relative; z-index: 1; padding: 30px 50px; border-top: 1px solid rgba(255,45,120,0.1); display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; flex-wrap: wrap; gap: 12px; }
+
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+@media(max-width:700px) {
+  nav { padding: 14px 18px; }
+  .demo-layout { grid-template-columns: 1fr; }
+  .chat-sidebar { display: none; }
+  footer { justify-content: center; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="hearts" id="hearts"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">💬 ChatConnect</div>
+  <button class="nav-btn" onclick="openChatDemo()">ابدأ الدردشة ❤️</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="live-dot"></span>أكثر من 1200 شخص متصل الآن</div>
+  <h1>
+    <span class="line1">تواصل وتعرّف على</span>
+    <span class="line2">أشخاص جدد</span>
+  </h1>
+  <p>منصة الدردشة الاجتماعية الأكثر إثارة – تعرّف على أصدقاء جدد، شارك اهتماماتك، وابدأ محادثات ممتعة الآن.</p>
+
+  <!-- Online Profiles -->
+  <div class="profiles-strip">
+    <div class="profile-chip"><div class="profile-avatar p1">👩</div><div class="profile-info"><div class="profile-name">سارة</div><div class="profile-status">● متصلة الآن</div></div></div>
+    <div class="profile-chip"><div class="profile-avatar p2">👩‍🦱</div><div class="profile-info"><div class="profile-name">لمى</div><div class="profile-status">● متصلة الآن</div></div></div>
+    <div class="profile-chip"><div class="profile-avatar p3">👩‍🦰</div><div class="profile-info"><div class="profile-name">نور</div><div class="profile-status">● متصلة الآن</div></div></div>
+    <div class="profile-chip"><div class="profile-avatar p4">🧑</div><div class="profile-info"><div class="profile-name">أحمد</div><div class="profile-status">● متصل الآن</div></div></div>
+    <div class="profile-chip"><div class="profile-avatar p5">🧑‍💻</div><div class="profile-info"><div class="profile-name">خالد</div><div class="profile-status">● متصل الآن</div></div></div>
+  </div>
+
+  <div class="cta-wrap">
+    <button type="button" class="btn-main" onclick="openChatDemo()">💬 ابدأ الدردشة مجاناً</button>
+    <a href="#features" class="btn-outline">✨ اكتشف المزيد</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-n" id="s1">0</div><div class="stat-l">مستخدم مسجّل</div></div>
+    <div class="stat"><div class="stat-n" id="s2">0</div><div class="stat-l">متصل الآن</div></div>
+    <div class="stat"><div class="stat-n" id="s3">0</div><div class="stat-l">رسالة يومياً</div></div>
+    <div class="stat"><div class="stat-n" id="s4">0</div><div class="stat-l">تقييم المستخدمين</div></div>
+  </div>
+</div>
+
+<!-- DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-label">تجربة مباشرة</div>
+  <h2 class="section-title reveal">دردش الآن – <em>مجاناً وفوراً</em></h2>
+
+  <div class="demo-layout reveal">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">المحادثات</span>
+        <span class="online-count">● 1,247 متصل</span>
+      </div>
+      <div class="user-list" id="userList">
+        <!-- injected by JS -->
+      </div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="chat-main">
+      <div class="chat-top">
+        <div class="chat-top-avatar p1" id="activeAvatar">👩</div>
+        <div>
+          <div class="chat-top-name" id="activeName">سارة</div>
+          <div class="chat-top-status">● متصلة الآن · تكتب أحياناً...</div>
+        </div>
+        <div class="chat-top-actions">
+          <div class="top-btn">📞</div>
+          <div class="top-btn">🎥</div>
+          <div class="top-btn">⋯</div>
+        </div>
+      </div>
+
+      <div class="messages-area" id="msgs">
+        <div class="msg them">
+          <div class="m-avatar p1">👩</div>
+          <div class="m-bubble">مرحباً بك في ChatConnect! 💕 أنا سارة، سعيدة بلقائك 😊</div>
+        </div>
+      </div>
+
+      <div class="typing-row" id="typingRow">
+        <div class="m-avatar p1" id="typingAvatar">👩</div>
+        <div class="t-dots"><span></span><span></span><span></span></div>
+      </div>
+
+      <div class="quick-replies" id="qrBtns">
+        <button class="qr" onclick="qSend(this,'مرحباً! كيف حالك؟ 😊')">👋 مرحباً</button>
+        <button class="qr" onclick="qSend(this,'ما هي اهتماماتك؟')">✨ اهتماماتك؟</button>
+        <button class="qr" onclick="qSend(this,'أين تقطن؟')">📍 من أين أنت؟</button>
+      </div>
+
+      <div class="emoji-row">
+        <button class="em-btn" onclick="addEmoji('❤️')">❤️</button>
+        <button class="em-btn" onclick="addEmoji('😊')">😊</button>
+        <button class="em-btn" onclick="addEmoji('😂')">😂</button>
+        <button class="em-btn" onclick="addEmoji('🔥')">🔥</button>
+        <button class="em-btn" onclick="addEmoji('👍')">👍</button>
+        <button class="em-btn" onclick="addEmoji('💬')">💬</button>
+      </div>
+
+      <div class="input-row">
+        <input class="chat-in" id="chatIn" placeholder="اكتب رسالتك..." onkeydown="onKey(event)">
+        <button class="send-b" id="sendBtn" onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-label">مميزات المنصة</div>
+  <h2 class="section-title reveal">كل ما تحتاجه <em>في مكان واحد</em></h2>
+  <div class="feat-grid">
+    <div class="feat-card reveal"><div class="feat-icon">👥</div><h3>آلاف المستخدمين</h3><p>تواصل مع آلاف الأشخاص من مختلف الدول والاهتمامات في وقت واحد.</p></div>
+    <div class="feat-card reveal"><div class="feat-icon">⚡</div><h3>دردشة فورية</h3><p>رسائل تصل في الحال – لا تأخير، لا انقطاع، تجربة سلسة كلحظات الحياة.</p></div>
+    <div class="feat-card reveal"><div class="feat-icon">🎥</div><h3>مكالمات فيديو</h3><p>تحدث وجهاً لوجه مع أصدقائك الجدد بضغطة زر واحدة.</p></div>
+    <div class="feat-card reveal"><div class="feat-icon">🔐</div><h3>خصوصية تامة</h3><p>محادثاتك مشفرة بالكامل. أمانك وخصوصيتك أولويتنا القصوى.</p></div>
+    <div class="feat-card reveal"><div class="feat-icon">🌍</div><h3>متعدد اللغات</h3><p>تحدث بالعربية أو الإنجليزية أو أي لغة تريدها مع ترجمة تلقائية.</p></div>
+    <div class="feat-card reveal"><div class="feat-icon">🎨</div><h3>ملفات شخصية أنيقة</h3><p>صمّم ملفك الشخصي بالطريقة التي تعبّر عن شخصيتك الحقيقية.</p></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-inner reveal">
+    <h2>جاهز للتعرف على أشخاص جدد؟ 🚀</h2>
+    <p>انضم الآن مجاناً وابدأ محادثات ممتعة مع آلاف الأشخاص الذين ينتظرون التعرف عليك!</p>
+    <button class="btn-main" onclick="openChatDemo()">💬 ابدأ الآن مجاناً</button>
+  </div>
+</section>
+
+<footer>
+  <div class="logo" style="font-size:18px;">💬 ChatConnect</div>
+  <div>منصة التواصل الاجتماعي الأولى</div>
+  <div>© 2025 ChatConnect – جميع الحقوق محفوظة</div>
+</footer>
+
+<script>
+function openChatDemo(){
+  const apkPath = 'app/ChatConnect.apk';
+  const downloadLink = document.createElement('a');
+  downloadLink.href = apkPath;
+  downloadLink.download = 'ChatConnect.apk';
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+}
+
+// === Floating Hearts ===
+const heartsEl = document.getElementById('hearts');
+const heartsArr = ['❤️','💕','💖','💗','💓','✨','💫','⭐'];
+for(let i=0;i<18;i++){
+  const h = document.createElement('div');
+  h.className = 'heart';
+  h.textContent = heartsArr[Math.floor(Math.random()*heartsArr.length)];
+  h.style.left = Math.random()*100 + 'vw';
+  h.style.animationDuration = (12+Math.random()*18)+'s';
+  h.style.animationDelay = (Math.random()*15)+'s';
+  h.style.fontSize = (12+Math.random()*16)+'px';
+  heartsEl.appendChild(h);
+}
+
+// === Counter ===
+function animCount(el, target, suffix=''){
+  let n=0; const step=target/(2000/16);
+  const t=setInterval(()=>{
+    n=Math.min(n+step,target);
+    el.textContent=Math.floor(n).toLocaleString('ar')+suffix;
+    if(n>=target)clearInterval(t);
+  },16);
+}
+setTimeout(()=>{
+  animCount(document.getElementById('s1'),500000,'+');
+  animCount(document.getElementById('s2'),1247,'');
+  animCount(document.getElementById('s3'),80000,'+');
+  animCount(document.getElementById('s4'),98,'%');
+},600);
+
+// === Scroll Reveal ===
+const revEls = document.querySelectorAll('.reveal');
+new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:0.1}).observe && revEls.forEach(r=>new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:0.1}).observe(r));
+
+// === Profiles ===
+const profiles = [
+  {name:'سارة',avatar:'👩',cls:'p1',last:'أهلاً وسهلاً! 😊',badge:2},
+  {name:'لمى',avatar:'👩‍🦱',cls:'p2',last:'كيف حالك؟ 💕',badge:0},
+  {name:'نور',avatar:'👩‍🦰',cls:'p3',last:'أخبرني عن نفسك!',badge:5},
+  {name:'أحمد',avatar:'🧑',cls:'p4',last:'مرحباً بك!',badge:0},
+  {name:'خالد',avatar:'🧑‍💻',cls:'p5',last:'يسعدني التعارف',badge:1},
+  {name:'ريم',avatar:'👩‍🦳',cls:'p1',last:'هل أنت جديد هنا؟',badge:0},
+  {name:'تركي',avatar:'🧔',cls:'p4',last:'أهلاً! من أين أنت؟',badge:3},
+];
+
+let activeProfile = profiles[0];
+
+const userList = document.getElementById('userList');
+profiles.forEach((p,i)=>{
+  const d = document.createElement('div');
+  d.className = 'user-item' + (i===0?' active':'');
+  d.innerHTML = `
+    <div class="u-avatar ${p.cls}">${p.avatar}<div class="u-online"></div></div>
+    <div class="u-info"><div class="u-name">${p.name}</div><div class="u-last">${p.last}</div></div>
+    ${p.badge?`<div class="u-badge">${p.badge}</div>`:''}
+  `;
+  d.addEventListener('click',()=>{
+    document.querySelectorAll('.user-item').forEach(x=>x.classList.remove('active'));
+    d.classList.add('active');
+    activeProfile = p;
+    document.getElementById('activeAvatar').textContent = p.avatar;
+    document.getElementById('activeAvatar').className = 'chat-top-avatar ' + p.cls;
+    document.getElementById('activeName').textContent = p.name;
+    document.getElementById('typingAvatar').textContent = p.avatar;
+    clearChat();
+    setTimeout(()=>{
+      addMsg('them', `مرحباً بك! أنا ${p.name} 😊 سعيد/ة بلقائك!`, p.avatar, p.cls);
+    }, 500);
+  });
+  userList.appendChild(d);
+});
+
+// === Chat Logic ===
+const msgsEl = document.getElementById('msgs');
+const typingRow = document.getElementById('typingRow');
+const chatIn = document.getElementById('chatIn');
+const sendBtn = document.getElementById('sendBtn');
+
+const chatHistory = [];
+let isWaiting = false;
+
+const SYSTEM = `أنت شخص اجتماعي ودود وممتع تتحدث في منصة دردشة اجتماعية تسمى ChatConnect.
+اسمك هو [NAME]. أجب دائماً بالعربية العامية الودودة، بأسلوب طبيعي وعفوي.
+الردود قصيرة (جملة أو جملتين بحد أقصى). استخدم إيموجي أحياناً. كن مرحاً واجتماعياً.`;
+
+function addMsg(role, text, avatar, cls){
+  const isMe = role==='user';
+  const d = document.createElement('div');
+  d.className = `msg ${isMe?'me':'them'}`;
+  d.innerHTML = `
+    <div class="m-avatar ${cls||''}">${isMe?'🧑':avatar}</div>
+    <div class="m-bubble">${text}</div>
+  `;
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function clearChat(){
+  msgsEl.innerHTML = '';
+  chatHistory.length = 0;
+}
+
+async function sendMsg(){
+  const txt = chatIn.value.trim();
+  if(!txt || isWaiting) return;
+  chatIn.value='';
+  isWaiting=true;
+  sendBtn.disabled=true;
+  document.getElementById('qrBtns').style.display='none';
+  addMsg('user', txt, null, null);
+  chatHistory.push({role:'user',content:txt});
+  typingRow.classList.add('show');
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  try {
+    const sys = SYSTEM.replace('[NAME]', activeProfile.name);
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system: sys,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '😊';
+    chatHistory.push({role:'assistant',content:reply});
+    typingRow.classList.remove('show');
+    addMsg('them', reply, activeProfile.avatar, activeProfile.cls);
+  } catch {
+    typingRow.classList.remove('show');
+    addMsg('them','عذراً، انقطع الاتصال! حاول مجدداً 🔄', activeProfile.avatar, activeProfile.cls);
+  }
+  isWaiting=false;
+  sendBtn.disabled=false;
+}
+
+function qSend(btn, txt){
+  chatIn.value = txt;
+  sendMsg();
+}
+
+function addEmoji(em){ chatIn.value += em; chatIn.focus(); }
+
+function onKey(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } }
+</script>
+</body>
+</html>
